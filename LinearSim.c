@@ -88,8 +88,10 @@ int main() {
       // Change pipes
       // rightPipeOut ----> leftPipeIn
       // rightPipeIn  <---- leftPipeOut 
-      rightPipeIn = leftPipeOut;
-      rightPipeOut = leftPipeIn;
+      rightPipeIn[0] = leftPipeOut[0];
+      rightPipeIn[1] = leftPipeOut[1];
+      rightPipeOut[0] = leftPipeIn[0];
+      rightPipeOut[1] = leftPipeIn[1];
    }
 
    // Cells initialized: Free the write end of driverPipe from LinearSim
