@@ -19,41 +19,24 @@ int main(int argc, char *argv[]) {
 
    while(--argc && ++argv) {
       inputChar = *(*argv)++;
-      
-      if(inputChar == 'V') {
-         value = inputDoubleDec = 0;
-         while(**argv && **argv != '.') {
-            value *= 10;
-            value += *(*argv)++ - '0';
-         }
-        
-         ++*argv; 
-         while(**argv) {
-            inputDoubleDec += *(*argv)++ - '0';
-            inputDoubleDec /= 10;
-         }
 
-         value += inputDoubleDec;
-         fixed = 1;
+      if(inputChar == 'V') {
+         sscanf(*argv, "%lf ", &value);
       }
       else {
-         inputInt = 0;
-         while(**argv) {
-            inputInt *= 10;
-            inputInt += *(*argv)++ - '0';
-         }
-         
+         sscanf(*argv, "%d ", &inputInt);
+
          switch(inputChar) {
          case 'S':
             simulations = inputInt;
             break;
-         
+
          case 'D':
             id = inputInt;
             break;
 
          case 'O':
-            if(cursor = outputFiles) {
+            if((cursor = outputFiles)) {
                while(cursor->next)
                   cursor = cursor->next;
 
@@ -68,7 +51,7 @@ int main(int argc, char *argv[]) {
             break;
 
          case 'I':
-            if(cursor = inputFiles) {
+            if((cursor = inputFiles)) {
                while(cursor->next)
                   cursor = cursor->next;
 
@@ -85,6 +68,7 @@ int main(int argc, char *argv[]) {
       }
    }
 
+   //Test Printing
    printf("ID: %d Simulations: %d Value: %.2f\n",id,simulations,value);
    printf("Input Files: ");
    while(inputFiles) {
@@ -97,6 +81,6 @@ int main(int argc, char *argv[]) {
       outputFiles = outputFiles->next;
    }
    printf("\n");
-   
+
    return 0;
 }
