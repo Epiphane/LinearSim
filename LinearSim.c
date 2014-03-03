@@ -32,9 +32,8 @@ int main() {
    // Cells initialized: Free the write end of driverPipe from LinearSim
    close(driverPipe[1]);
 
-   // TODO: Main code
    while(read(driverPipe[0],&cellReport,sizeof(Report))) {
-      printf("Driver: %d said hi to me! :D\n",cellReport.id);
+      printf("Result from %d, step %d: %.3f\n",cellReport.id, cellReport.step, cellReport.value);
    }
 
    // Close reader

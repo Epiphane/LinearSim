@@ -22,6 +22,7 @@ int main(int argc, char *argv[]) {
 
       if(inputChar == 'V') {
          sscanf(*argv, "%lf ", &stateReport.value);
+         fixed = 1;
       }
       else {
          sscanf(*argv, "%d ", &inputInt);
