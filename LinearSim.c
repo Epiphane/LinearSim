@@ -6,9 +6,11 @@
 #define PARAM_LENGTH 10
 #define MAX_PARAMS 9
 
-void ForkCells(int numCells, int *cellIDs, int finalTime, int *driverPipe, double *endValues);
+void ForkCells(int numCells, int *cellIDs, int finalTime, int *driverPipe,
+ double *endValues);
 int MakeCell(char **params);
-void MovePipes(int *leftPipeIn, int *leftPipeOut, int *rightPipeIn, int *rightPipeOut);
+void MovePipes(int *leftPipeIn, int *leftPipeOut, int *rightPipeIn,
+ int *rightPipeOut);
 char *MakeIntParameter(char letter, int value);
 char *MakeDoubleParameter(double value);
 
@@ -33,7 +35,8 @@ int main() {
    close(driverPipe[1]);
 
    while(read(driverPipe[0],&cellReport,sizeof(Report))) {
-      printf("Result from %d, step %d: %.3f\n",cellReport.id, cellReport.step, cellReport.value);
+      printf("Result from %d, step %d: %.3f\n",
+       cellReport.id, cellReport.step, cellReport.value);
    }
 
    // Close reader
@@ -60,7 +63,8 @@ int main() {
  *    v                         v                         v
  * (LinearSim)             (LinearSim)              (LinearSim)
  */
-void ForkCells(int numCells, int *cellIDs, int finalTime, int *driverPipe, double *endValues) {
+void ForkCells(int numCells, int *cellIDs, int finalTime, int *driverPipe,
+ double *endValues) {
    int argNum;
    int rightPipeOut[2], rightPipeIn[2];
    int leftPipeOut[2], leftPipeIn[2];
@@ -130,7 +134,9 @@ int MakeCell(char **params) {
  * rightPipeOut ----> leftPipeIn
  * rightPipeIn  <---- leftPipeOut
  */
-void MovePipes(int *leftPipeIn, int *leftPipeOut, int *rightPipeIn, int *rightPipeOut) {
+void MovePipes(int *leftPipeIn, int *leftPipeOut, int *rightPipeIn,
+ int *rightPipeOut) {
+
    if(rightPipeIn[0] != -1) {
       close(rightPipeIn[0]);
       close(rightPipeIn[1]);
