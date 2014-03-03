@@ -35,7 +35,7 @@ int main() {
    // Cells initialized: Free the write end of driverPipe from LinearSim
    close(driverPipe[1]);
 
-   while(read(driverPipe[0],&cellReport,sizeof(Report))) {
+   while(read(driverPipe[0], &cellReport,sizeof(Report))) {
       printf("Result from %d, step %d: %.3f\n",
        cellReport.id, cellReport.step, cellReport.value);
    }
@@ -47,8 +47,8 @@ int main() {
       cellID = wait(&exitStatus);
       for(ndx = 0; cellID != cellIDs[ndx]; ndx++)
          ;
-      printf("Child %d exits ",ndx);
-      printf("with %d\n",WEXITSTATUS(exitStatus));
+      printf("Child %d exits ", ndx);
+      printf("with %d\n", WEXITSTATUS(exitStatus));
    }
 
    return 0;

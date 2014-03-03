@@ -8,8 +8,11 @@ typedef struct Pipe {
    struct Pipe *next;
 } Pipe;
 
+void PipeOut(Pipe *cursor, Report stateReport);
+void PipeListen(Pipe *cursor, Report stateReport, Report readReport);
+
 int main(int argc, char *argv[]) {
-   int inputInt, result;
+   int inputInt;
    double inputDoubleDec;
    char inputChar;
    Pipe *cursor;
@@ -57,9 +60,21 @@ int main(int argc, char *argv[]) {
    // Set up Report to know it's at the start
    stateReport.step = 0;
 
+   cursor = outputFiles;
+   PipeOut(cursor, stateReport);
+   cursor = inputFiles;
+   PipeListen(cursor, stateReport, readReport);
+
+   // END THE TEST ------------------------------------
+
+   return fixed ? 42 : 0;
+}
+
+void PipeOut(Pipe *cursor, Report stateReport) {
    // TESTS TO MAKE SURE PIPES WORK CORRECTLY ---------
    // Say hi, Billy! (Testing the pipes)
-   cursor = outputFiles;
+   int result;
+
    while(cursor) {
       if((result = write(cursor->fd, &stateReport, sizeof(Report))) <= 0)
          printf("%d: Issue writing to %d: write returned %d\n",
@@ -67,9 +82,12 @@ int main(int argc, char *argv[]) {
       close(cursor->fd);
       cursor = cursor->next;
    }
+}
 
+void PipeListen(Pipe *cursor, Report stateReport, Report readReport) {
    // Listen to your buddies, Billy!
-   cursor = inputFiles;
+   int result;
+
    while(cursor) {
       if(read(cursor->fd, &readReport, sizeof(Report))) {
          printf("%d: Cell %d said hi to me!!! :D\n",
@@ -82,8 +100,4 @@ int main(int argc, char *argv[]) {
       }
       cursor = cursor->next;
    }
-
-   // END THE TEST ------------------------------------
-
-   return fixed ? 42 : 0;
 }
