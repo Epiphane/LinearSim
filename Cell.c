@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
    double inputDoubleDec;
    char inputChar;
    Pipe *cursor;
-   
+
    Report stateReport, readReport;
    Pipe *inputFiles = NULL, *outputFiles = NULL;
    int simulations, fixed = 0;
@@ -51,33 +51,36 @@ int main(int argc, char *argv[]) {
          }
       }
    }
-   
+
    // Set up Report to know it's at the start
    stateReport.step = 0;
-   
+
    // TESTS TO MAKE SURE PIPES WORK CORRECTLY ---------
    // Say hi, Billy! (Testing the pipes)
    cursor = outputFiles;
    while(cursor) {
       if((result = write(cursor->fd, &stateReport, sizeof(Report))) <= 0)
-         printf("%d: Issue writing to %d: write returned %d\n", stateReport.id, cursor->fd, result);
+         printf("%d: Issue writing to %d: write returned %d\n",
+          stateReport.id, cursor->fd, result);
       close(cursor->fd);
       cursor = cursor->next;
    }
-   
+
    // Listen to your buddies, Billy!
    cursor = inputFiles;
    while(cursor) {
       if(read(cursor->fd, &readReport, sizeof(Report))) {
-         printf("%d: Cell %d said hi to me!!! :D\n",stateReport.id,readReport.id);
+         printf("%d: Cell %d said hi to me!!! :D\n",
+          stateReport.id, readReport.id);
       }
       else {
-         printf("%d: I didn't hear anything from File %d :( Closing it\n",stateReport.id, cursor->fd);
+         printf("%d: I didn't hear anything from File %d :( Closing it\n",
+          stateReport.id, cursor->fd);
          close(cursor->fd);
       }
       cursor = cursor->next;
    }
-   
+
    // END THE TEST ------------------------------------
 
    return fixed ? 42 : 0;

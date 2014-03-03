@@ -31,10 +31,10 @@ int main() {
    //Set first argument parameter to program call "Cell"
    *params = malloc(strlen("Cell") + 1);
    strcpy(*params, "Cell");
-   
+
    // VISUAL DIAGRAM OF WHAT ITS GONNA END LIKE
    // The rightmost cell is created FIRST
-   // Notes: LPO/LPI = leftPipeOut, leftPipeIn 
+   // Notes: LPO/LPI = leftPipeOut, leftPipeIn
    //        RPO/RPI = rightPipeOut, rightPipeIn
    //
    // Cell 0 I(RPI) <--- O(LPO) Cell 1 I(RPI) <--- O(LPO) Cell 2
@@ -44,12 +44,12 @@ int main() {
    cellID = numCells;
    while (cellID--) {
       argNum = 1;
-      
+
       //Set cell ID number
       params[argNum++] = makeIntParameter('D', cellID);
       params[argNum++] = makeIntParameter('S', finalTime);
       params[argNum++] = makeIntParameter('O', driverPipe[1]);
-      
+
       // If last cell (first one created, largest ID)
       if(rightPipeIn[0] == -1) {
          params[argNum++] = makeDoubleParameter(endValues[1]);
@@ -59,7 +59,7 @@ int main() {
          params[argNum++] = makeIntParameter('O', rightPipeOut[1]);
          params[argNum++] = makeIntParameter('I', rightPipeIn[0]);
       }
-      
+
       // If first cell (ID: 0, last one created)
       if(!cellID) {
          params[argNum++] = makeDoubleParameter(endValues[0]);
@@ -72,13 +72,13 @@ int main() {
          if(pipe(leftPipeIn))
             printf("Error creating leftPipeIn\n");
          //printf("Left pipes for %d (Right for %d): [%d %d] [%d %d]\n",cellID,cellID-1,leftPipeOut[0],leftPipeOut[1],leftPipeIn[0],leftPipeIn[1]);
-         
+
          params[argNum++] = makeIntParameter('O', leftPipeOut[1]);
          params[argNum++] = makeIntParameter('I', leftPipeIn[0]);
       }
-      
+
       params[argNum] = NULL;
-      
+
       // Make a child and have it run Cell
       if(fork() == 0) {
          execv("Cell",params);
@@ -109,10 +109,10 @@ int main() {
    while(read(driverPipe[0],&cellReport,sizeof(Report))) {
       printf("Driver: %d said hi to me! :D\n",cellReport.id);
    }
-   
+
    // Close reader
    close(driverPipe[0]);
-   
+
    while(numCells--) {
       printf("Child %d exits ",wait(&cellID));
       printf("with %d\n",WEXITSTATUS(cellID));
@@ -123,7 +123,7 @@ int main() {
 
 char *makeIntParameter(char letter, int value) {
    char *param = malloc(PARAM_LENGTH);
-   
+
    sprintf(param, "%c%d", letter, value);
 
    return param;
@@ -131,7 +131,7 @@ char *makeIntParameter(char letter, int value) {
 
 char *makeDoubleParameter(double value) {
    char *param = malloc(PARAM_LENGTH * 2);
-   
+
    sprintf(param, "V%f", value);
 
    return param;
