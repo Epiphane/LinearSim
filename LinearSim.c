@@ -122,9 +122,7 @@ void ForkCells(int numCells, int *cellIDs, int finalTime, int *driverPipe,
 int MakeCell(char **params) {
    int result;
 
-   if((result = fork()))
-      ;
-   else
+   if(!(result = fork()))
       execv("Cell", params);
 
    return result;
