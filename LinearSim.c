@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "Report.h"
 
 #define PARAM_LENGTH 10
@@ -121,7 +122,7 @@ void ForkCells(int numCells, int *cellIDs, int finalTime, int *driverPipe,
 int MakeCell(char **params) {
    int result;
 
-   if(result = fork())
+   if((result = fork()))
       ;
    else
       execv("Cell", params);
