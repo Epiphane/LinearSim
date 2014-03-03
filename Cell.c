@@ -59,9 +59,7 @@ int main(int argc, char *argv[]) {
    // Say hi, Billy! (Testing the pipes)
    cursor = outputFiles;
    while(cursor) {
-      if((result = write(cursor->fd, &stateReport, sizeof(Report))) > 0)
-         printf("%d: Sent my hello to %d\n",stateReport.id,cursor->fd);
-      else
+      if((result = write(cursor->fd, &stateReport, sizeof(Report))) <= 0)
          printf("%d: Issue writing to %d: write returned %d\n", stateReport.id, cursor->fd, result);
       close(cursor->fd);
       cursor = cursor->next;
@@ -70,7 +68,6 @@ int main(int argc, char *argv[]) {
    // Listen to your buddies, Billy!
    cursor = inputFiles;
    while(cursor) {
-      printf("%d: Trying to read from %d...\n",stateReport.id,cursor->fd);
       if(read(cursor->fd, &readReport, sizeof(Report))) {
          printf("%d: Cell %d said hi to me!!! :D\n",stateReport.id,readReport.id);
       }
@@ -78,9 +75,10 @@ int main(int argc, char *argv[]) {
          printf("%d: I didn't hear anything from File %d :( Closing it\n",stateReport.id, cursor->fd);
          close(cursor->fd);
       }
+      cursor = cursor->next;
    }
    
    // END THE TEST ------------------------------------
 
-   return 0;
+   return fixed ? 42 : 0;
 }
