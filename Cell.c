@@ -8,57 +8,17 @@ typedef struct Pipe {
    struct Pipe *next;
 } Pipe;
 
+int SetupCell(int argc, char **argv, Report *stateReport, int *simulations, Pipe **inputFiles, Pipe **outputFiles);
 void PipeOut(Pipe *cursor, Report stateReport);
 void PipeListen(Pipe *cursor, Report *stateReport, Report readReport);
 
 int main(int argc, char *argv[]) {
-   int inputInt;
-   double inputDoubleDec;
-   char inputChar;
    Pipe *cursor;
-
    Report stateReport, readReport;
+   int simulations, fixed;
    Pipe *inputFiles = NULL, *outputFiles = NULL;
-   int simulations, fixed = 0;
 
-   while(--argc && ++argv) {
-      inputChar = *(*argv)++;
-
-      if(inputChar == 'V') {
-         sscanf(*argv, "%lf ", &stateReport.value);
-         fixed = 1;
-      }
-      else {
-         sscanf(*argv, "%d ", &inputInt);
-
-         switch(inputChar) {
-         case 'S':
-            simulations = inputInt;
-            break;
-
-         case 'D':
-            stateReport.id = inputInt;
-            break;
-
-         case 'O':
-            cursor = malloc(sizeof(Pipe));
-            cursor->fd = inputInt;
-            cursor->next = outputFiles;
-            outputFiles = cursor;
-            break;
-
-         case 'I':
-            cursor = malloc(sizeof(Pipe));
-            cursor->fd = inputInt;
-            cursor->next = inputFiles;
-            inputFiles = cursor;
-            break;
-         }
-      }
-   }
-
-   // Set up Report to know it's at the start
-   stateReport.step = 0;
+   fixed = SetupCell(argc, argv, &stateReport, &simulations, &inputFiles, &outputFiles);
 
    cursor = outputFiles;
    PipeOut(cursor, stateReport);
@@ -68,6 +28,55 @@ int main(int argc, char *argv[]) {
    // END THE TEST ------------------------------------
 
    return fixed ? 42 : 0;
+}
+
+int SetupCell(int argc, char **argv, Report *stateReport, int *simulations, Pipe **inputFiles, Pipe **outputFiles) {
+   int inputInt;
+   double inputDoubleDec;
+   char inputChar;
+   Pipe *cursor;
+   int fixed = 0;
+
+   while(--argc && ++argv) {
+      inputChar = *(*argv)++;
+
+      if(inputChar == 'V') {
+         sscanf(*argv, "%lf ", &stateReport->value);
+         fixed = 1;
+      }
+      else {
+         sscanf(*argv, "%d ", &inputInt);
+
+         switch(inputChar) {
+         case 'S':
+            *simulations = inputInt;
+            break;
+
+         case 'D':
+            stateReport->id = inputInt;
+            break;
+
+         case 'O':
+            cursor = malloc(sizeof(Pipe));
+            cursor->fd = inputInt;
+            cursor->next = *outputFiles;
+            *outputFiles = cursor;
+            break;
+
+         case 'I':
+            cursor = malloc(sizeof(Pipe));
+            cursor->fd = inputInt;
+            cursor->next = *inputFiles;
+            *inputFiles = cursor;
+            break;
+         }
+      }
+   }
+
+   // Set up Report to know it's at the start
+   stateReport->step = 0;
+
+   return fixed;
 }
 
 void PipeOut(Pipe *cursor, Report stateReport) {

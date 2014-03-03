@@ -135,7 +135,6 @@ int MakeCell(char **params) {
  */
 void MovePipes(int *leftPipeIn, int *leftPipeOut, int *rightPipeIn,
  int *rightPipeOut) {
-
    if(rightPipeIn[0] != -1) {
       close(rightPipeIn[0]);
       close(rightPipeIn[1]);
