@@ -17,6 +17,7 @@ int main() {
    int leftPipeOut[2], leftPipeIn[2];
    char *params[MAX_PARAMS], *strCursor;
    Report cellReport;
+   char buffer[100];
 
    // Create pipe for driver
    pipe(driverPipe);
@@ -70,8 +71,10 @@ int main() {
             printf("Error creating leftPipeOut\n");
          if(pipe(leftPipeIn))
             printf("Error creating leftPipeIn\n");
-         printf("New pipes: [%d %d] [%d %d]\n",leftPipeOut[0],leftPipeOut[1],leftPipeIn[0],leftPipeIn[1]);
+         printf("Left pipes for %d (Right for %d): [%d %d] [%d %d]\n",cellID,cellID-1,leftPipeOut[0],leftPipeOut[1],leftPipeIn[0],leftPipeIn[1]);
 
+         //printf("Testing a write to %d: returned %d",leftPipeOut[1],write(leftPipeOut,cell))
+         
          params[argNum++] = makeIntParameter('O', leftPipeOut[1]);
          params[argNum++] = makeIntParameter('I', leftPipeIn[0]);
       }
@@ -85,7 +88,7 @@ int main() {
       }
 
       // Free rightPipe since the driver don't care
-      if(0 || rightPipeIn[0] != -1) {
+      if(0 && rightPipeIn[0] != -1) {
          close(rightPipeIn[0]);
          close(rightPipeIn[1]);
          close(rightPipeOut[0]);
@@ -102,7 +105,7 @@ int main() {
    }
 
    // Cells initialized: Free the write end of driverPipe from LinearSim
-   close(driverPipe[1]);
+   //close(driverPipe[1]);
 
    // TODO: Main code
    while(read(driverPipe[0],&cellReport,sizeof(Report))) {
@@ -110,7 +113,7 @@ int main() {
    }
    
    // Close reader
-   close(driverPipe[0]);
+   //close(driverPipe[0]);
    
    while(numCells--) {
       printf("Child %d exits ",wait(&cellID));
