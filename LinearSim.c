@@ -16,6 +16,7 @@ int main() {
    int rightPipeOut[2], rightPipeIn[2];
    int leftPipeOut[2], leftPipeIn[2];
    char *params[MAX_PARAMS], *strCursor;
+   Report cellReport;
 
    // Create pipe for driver
    pipe(driverPipe);
@@ -39,11 +40,12 @@ int main() {
    //    |   O(RPO) ---> I(LPI)    |   O(RPO) ---> I(LPI)    |
    //    v                         v                         v
    // (LinearSim)             (LinearSim)              (LinearSim)
-   while (numCells--) {
+   cellID = numCells;
+   while (cellID--) {
       argNum = 1;
       
       //Set cell ID number
-      params[argNum++] = makeIntParameter('D', numCells);
+      params[argNum++] = makeIntParameter('D', cellID);
       params[argNum++] = makeIntParameter('S', finalTime);
       params[argNum++] = makeIntParameter('O', driverPipe[1]);
       
@@ -58,7 +60,7 @@ int main() {
       }
       
       // If first cell (ID: 0, last one created)
-      if(!numCells) {
+      if(!cellID) {
          params[argNum++] = makeDoubleParameter(endValues[0]);
       }
       // Otherwise we have an input/output situation on the left too!
@@ -68,6 +70,7 @@ int main() {
             printf("Error creating leftPipeOut\n");
          if(pipe(leftPipeIn))
             printf("Error creating leftPipeIn\n");
+         printf("New pipes: [%d %d] [%d %d]\n",leftPipeOut[0],leftPipeOut[1],leftPipeIn[0],leftPipeIn[1]);
 
          params[argNum++] = makeIntParameter('O', leftPipeOut[1]);
          params[argNum++] = makeIntParameter('I', leftPipeIn[0]);
@@ -77,13 +80,9 @@ int main() {
       
       // Make a child and have it run Cell
       if(fork() == 0) {
-         // Duplicate driverPipe[1] so that we can just wti  
-         
          execv("Cell",params);
          printf("Cell creation failed\n");
       }
-      
-      wait(params+1);
 
       // Free rightPipe since the driver don't care
       if(0 || rightPipeIn[0] != -1) {
@@ -106,9 +105,17 @@ int main() {
    close(driverPipe[1]);
 
    // TODO: Main code
-
+   while(read(driverPipe[0],&cellReport,sizeof(Report))) {
+      printf("Driver: %d said hi to me! :D\n",cellReport.id);
+   }
+   
    // Close reader
    close(driverPipe[0]);
+   
+   while(numCells--) {
+      printf("Child %d exits ",wait(&cellID));
+      printf("which %d\n",WEXITSTATUS(cellID));
+   }
 
    return 0;
 }

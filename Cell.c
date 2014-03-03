@@ -12,16 +12,16 @@ int main(int argc, char *argv[]) {
    double inputDoubleDec;
    char inputChar;
    Pipe *cursor;
-
+   
+   Report stateReport, readReport;
    Pipe *inputFiles = NULL, *outputFiles = NULL;
-   double value;
-   int id, simulations, fixed = 0;
+   int simulations, fixed = 0;
 
    while(--argc && ++argv) {
       inputChar = *(*argv)++;
 
       if(inputChar == 'V') {
-         sscanf(*argv, "%lf ", &value);
+         sscanf(*argv, "%lf ", &stateReport.value);
       }
       else {
          sscanf(*argv, "%d ", &inputInt);
@@ -32,55 +32,53 @@ int main(int argc, char *argv[]) {
             break;
 
          case 'D':
-            id = inputInt;
+            stateReport.id = inputInt;
             break;
 
          case 'O':
-            if((cursor = outputFiles)) {
-               while(cursor->next)
-                  cursor = cursor->next;
-
-               cursor->next = calloc(1, sizeof(Pipe));
-               cursor = cursor->next;
-               cursor->fd = inputInt;
-            }
-            else {
-               outputFiles = calloc(1, sizeof(Pipe));
-               outputFiles->fd = inputInt;
-            }
+            cursor = malloc(sizeof(Pipe));
+            cursor->fd = inputInt;
+            cursor->next = outputFiles;
+            outputFiles = cursor;
             break;
 
          case 'I':
-            if((cursor = inputFiles)) {
-               while(cursor->next)
-                  cursor = cursor->next;
-
-               cursor->next = calloc(1, sizeof(Pipe));
-               cursor = cursor->next;
-               cursor->fd = inputInt;
-            }
-            else {
-               inputFiles = calloc(1, sizeof(Pipe));
-               inputFiles->fd = inputInt;
-            }
+            cursor = malloc(sizeof(Pipe));
+            cursor->fd = inputInt;
+            cursor->next = inputFiles;
+            inputFiles = cursor;
             break;
          }
       }
    }
-
-   //Test Printing
-   printf("ID: %d Simulations: %d Value: %.2f\n",id,simulations,value);
-   printf("Input Files: ");
-   while(inputFiles) {
-      printf("%d ",inputFiles->fd);
-      inputFiles = inputFiles->next;
+   
+   // Set up Report to know it's at the start
+   stateReport.step = 0;
+   
+   // TESTS TO MAKE SURE PIPES WORK CORRECTLY ---------
+   // Say hi, Billy! (Testing the pipes)
+   cursor = outputFiles;
+   while(cursor) {
+      write(cursor->fd, stateReport, sizeof(Report));
+      printf("%d: Sent my hello to %d\n",stateReport.id,cursor->fd);
+      close(cursor->fd);
+      cursor = cursor->next;
    }
-   printf("\nOutput Files: ");
-   while(outputFiles) {
-      printf("%d ",outputFiles->fd);
-      outputFiles = outputFiles->next;
+   
+   // Listen to your buddies, Billy!
+   cursor = inputFiles;
+   while(cursor) {
+      printf("%d: Trying to read from %d...\n",stateReport.id,cursor->fd);
+      if(read(cursor->fd, readReport, sizeof(Report))) {
+         printf("%d: Cell %d said hi to me!!! :D\n",stateReport.id,readReport.id);
+      }
+      else {
+         printf("%d: I didn't hear anything from File %d :( Closing it\n",stateReport.id, cursor->fd);
+         close(cursor->fd);
+      }
    }
-   printf("\n");
+   
+   // END THE TEST ------------------------------------
 
    return 0;
 }
