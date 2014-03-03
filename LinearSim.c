@@ -4,14 +4,14 @@
 #include "Report.h"
 
 #define PARAM_LENGTH 10
-#define MAX_PARAMS 8
+#define MAX_PARAMS 9
 
 char *makeIntParameter(char letter, int value);
 char *makeDoubleParameter(double value);
 
 int main() {
    double endValues[2];
-   int finalTime, numCells, cellID, argNum = 1;
+   int finalTime, numCells, cellID, argNum;
    int driverPipe[2];
    int rightPipeOut[2], rightPipeIn[2];
    int leftPipeOut[2], leftPipeIn[2];
@@ -29,7 +29,7 @@ int main() {
    //Set first argument parameter to program call "Cell"
    *params = malloc(strlen("Cell") + 1);
    strcpy(*params, "Cell");
-
+   
    // VISUAL DIAGRAM OF WHAT ITS GONNA END LIKE
    // The rightmost cell is created FIRST
    // Notes: LPO/LPI = leftPipeOut, leftPipeIn 
@@ -40,11 +40,13 @@ int main() {
    //    v                         v                         v
    // (LinearSim)             (LinearSim)              (LinearSim)
    while (numCells--) {
+      argNum = 1;
+      
       //Set cell ID number
       params[argNum++] = makeIntParameter('D', numCells);
       params[argNum++] = makeIntParameter('S', finalTime);
       params[argNum++] = makeIntParameter('O', driverPipe[1]);
-
+      
       // If last cell (first one created, largest ID)
       if(rightPipeIn[0] == -1) {
          params[argNum++] = makeDoubleParameter(endValues[1]);
@@ -54,31 +56,44 @@ int main() {
          params[argNum++] = makeIntParameter('O', rightPipeOut[1]);
          params[argNum++] = makeIntParameter('I', rightPipeIn[0]);
       }
-
+      
       // If first cell (ID: 0, last one created)
-      if(!cellID) {
+      if(!numCells) {
          params[argNum++] = makeDoubleParameter(endValues[0]);
       }
       // Otherwise we have an input/output situation on the left too!
       else {
          // Create leftPipe
-         pipe(leftPipeOut);
-         pipe(leftPipeIn);
+         if(pipe(leftPipeOut))
+            printf("Error creating leftPipeOut\n");
+         if(pipe(leftPipeIn))
+            printf("Error creating leftPipeIn\n");
+         printf("New pipe: [%d %d]\n",leftPipeOut[0],leftPipeOut[1]);
+         printf("New pipe: [%d %d]\n",leftPipeIn[0],leftPipeIn[1]);
 
          params[argNum++] = makeIntParameter('O', leftPipeOut[1]);
          params[argNum++] = makeIntParameter('I', leftPipeIn[0]);
       }
-
+      
       params[argNum] = NULL;
-
+      
       // Make a child and have it run Cell
       if(fork() == 0) {
-         execv("Cell",params);
+         printf("Cell %d: ",numCells);
+         while(argNum-- > 1) {
+            printf("%s ",params[argNum]);
+         }
+         argNum ++;
+         printf("\n");
+         //execv("Cell",params);
+         return 0;
          printf("Cell creation failed\n");
       }
+      
+      wait(params+1);
 
       // Free rightPipe since the driver don't care
-      if(rightPipeIn[0] != -1) {
+      if(0 || rightPipeIn[0] != -1) {
          close(rightPipeIn[0]);
          close(rightPipeIn[1]);
          close(rightPipeOut[0]);
@@ -87,11 +102,13 @@ int main() {
 
       // Change pipes
       // rightPipeOut ----> leftPipeIn
-      // rightPipeIn  <---- leftPipeOut 
+      // rightPipeIn  <---- leftPipeOut
+      printf("Old LPO: %d->%d, LPI: %d->%d\n",leftPipeOut[1],leftPipeOut[0],leftPipeIn[1],leftPipeIn[0]);
       rightPipeIn[0] = leftPipeOut[0];
       rightPipeIn[1] = leftPipeOut[1];
       rightPipeOut[0] = leftPipeIn[0];
       rightPipeOut[1] = leftPipeIn[1];
+      printf("New RPO: %d->%d, RPI: %d->%d\n",rightPipeOut[1],rightPipeOut[0],rightPipeIn[1],rightPipeIn[0]);
    }
 
    // Cells initialized: Free the write end of driverPipe from LinearSim
@@ -114,9 +131,9 @@ char *makeIntParameter(char letter, int value) {
 }
 
 char *makeDoubleParameter(double value) {
-   char *param = malloc(PARAM_LENGTH);
+   char *param = malloc(PARAM_LENGTH * 2);
    
-   sprintf(param, "V%lf", value);
+   sprintf(param, "V%f", value);
 
    return param;
 }
