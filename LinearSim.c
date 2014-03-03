@@ -68,8 +68,6 @@ int main() {
             printf("Error creating leftPipeOut\n");
          if(pipe(leftPipeIn))
             printf("Error creating leftPipeIn\n");
-         printf("New pipe: [%d %d]\n",leftPipeOut[0],leftPipeOut[1]);
-         printf("New pipe: [%d %d]\n",leftPipeIn[0],leftPipeIn[1]);
 
          params[argNum++] = makeIntParameter('O', leftPipeOut[1]);
          params[argNum++] = makeIntParameter('I', leftPipeIn[0]);
@@ -79,14 +77,9 @@ int main() {
       
       // Make a child and have it run Cell
       if(fork() == 0) {
-         printf("Cell %d: ",numCells);
-         while(argNum-- > 1) {
-            printf("%s ",params[argNum]);
-         }
-         argNum ++;
-         printf("\n");
-         //execv("Cell",params);
-         return 0;
+         // Duplicate driverPipe[1] so that we can just wti  
+         
+         execv("Cell",params);
          printf("Cell creation failed\n");
       }
       
@@ -103,12 +96,10 @@ int main() {
       // Change pipes
       // rightPipeOut ----> leftPipeIn
       // rightPipeIn  <---- leftPipeOut
-      printf("Old LPO: %d->%d, LPI: %d->%d\n",leftPipeOut[1],leftPipeOut[0],leftPipeIn[1],leftPipeIn[0]);
       rightPipeIn[0] = leftPipeOut[0];
       rightPipeIn[1] = leftPipeOut[1];
       rightPipeOut[0] = leftPipeIn[0];
       rightPipeOut[1] = leftPipeIn[1];
-      printf("New RPO: %d->%d, RPI: %d->%d\n",rightPipeOut[1],rightPipeOut[0],rightPipeIn[1],rightPipeIn[0]);
    }
 
    // Cells initialized: Free the write end of driverPipe from LinearSim
