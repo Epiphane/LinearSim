@@ -108,5 +108,6 @@ void PipeListen(Pipe *cursor, Report *stateReport, Report readReport) {
    if (count) {
       average /= count;
       stateReport->value = average;
+      printf("%lf\n", average);
    }
 }
