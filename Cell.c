@@ -9,7 +9,7 @@ typedef struct Pipe {
 } Pipe;
 
 void PipeOut(Pipe *cursor, Report stateReport);
-void PipeListen(Pipe *cursor, Report stateReport, Report readReport);
+void PipeListen(Pipe *cursor, Report *stateReport, Report readReport);
 
 int main(int argc, char *argv[]) {
    int inputInt;
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
    cursor = outputFiles;
    PipeOut(cursor, stateReport);
    cursor = inputFiles;
-   PipeListen(cursor, stateReport, readReport);
+   PipeListen(cursor, &stateReport, readReport);
 
    // END THE TEST ------------------------------------
 
@@ -84,20 +84,29 @@ void PipeOut(Pipe *cursor, Report stateReport) {
    }
 }
 
-void PipeListen(Pipe *cursor, Report stateReport, Report readReport) {
+void PipeListen(Pipe *cursor, Report *stateReport, Report readReport) {
    // Listen to your buddies, Billy!
-   int result;
+   int result, count = 0;
+   double average = 0;
 
    while(cursor) {
       if(read(cursor->fd, &readReport, sizeof(Report))) {
          printf("%d: Cell %d said hi to me!!! :D\n",
-          stateReport.id, readReport.id);
+          stateReport->id, readReport.id);
+
+         count++;
+         average += readReport.value;
       }
       else {
          printf("%d: I didn't hear anything from File %d :( Closing it\n",
-          stateReport.id, cursor->fd);
+          stateReport->id, cursor->fd);
          close(cursor->fd);
       }
       cursor = cursor->next;
+   }
+
+   if (count) {
+      average /= count;
+      stateReport->value = average;
    }
 }
