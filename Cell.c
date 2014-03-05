@@ -21,15 +21,11 @@ int main(int argc, char *argv[]) {
 
    SetupCell(argc, argv, &stateReport, &simulations, &inputFiles, &outputFiles);
 
-   cursor = outputFiles;
-   PipeOut(cursor, &stateReport);
-   stateReport.step++;
-
    for (; stateReport.step <= simulations; stateReport.step++) {
-      cursor = inputFiles;
-      PipeListen(cursor, &stateReport, readReport);
       cursor = outputFiles;
       PipeOut(cursor, &stateReport);
+      cursor = inputFiles;
+      PipeListen(cursor, &stateReport, readReport);
    }
 
    cursor = outputFiles;
@@ -47,9 +43,6 @@ void SetupCell(int argc, char **argv, Report *stateReport, int *simulations,
    double inputDoubleDec;
    char inputChar;
    Pipe *cursor;
-
-   //*outputFiles = calloc(1, sizeof(Pipe));
-   //(*outputFiles)->fd = 1;
 
    while (--argc && ++argv) {
       inputChar = *(*argv)++;
@@ -71,7 +64,7 @@ void SetupCell(int argc, char **argv, Report *stateReport, int *simulations,
 
          case 'O':
             cursor = malloc(sizeof(Pipe));
-            cursor->fd = *outputFiles ? inputInt : 1;
+            cursor->fd = inputInt;
             cursor->next = *outputFiles;
             *outputFiles = cursor;
             break;
@@ -93,9 +86,8 @@ void PipeOut(Pipe *cursor, Report *stateReport) {
    int result;
 
    while (cursor) {
-      if ((result = write(cursor->fd, stateReport, sizeof(Report))) <= 0)
-         ;//printf("%d: Issue writing to %d: write returned %d\n",
-          //stateReport->id, cursor->fd, result);
+      result = write(cursor->fd, stateReport, sizeof(Report));
+
       cursor = cursor->next;
    }
 }
