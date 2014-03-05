@@ -32,6 +32,12 @@ int main(int argc, char *argv[]) {
       PipeOut(cursor, &stateReport);
    }
 
+   cursor = outputFiles;
+   while (cursor) {
+     close(cursor->fd);
+     cursor = cursor->next;
+   }
+
    // END THE TEST ------------------------------------
 
    return fixed ? 42 : 0;
@@ -95,7 +101,6 @@ void PipeOut(Pipe *cursor, Report *stateReport) {
       if((result = write(cursor->fd, stateReport, sizeof(Report))) <= 0)
          printf("%d: Issue writing to %d: write returned %d\n",
           stateReport->id, cursor->fd, result);
-      close(cursor->fd);
       cursor = cursor->next;
    }
 }
@@ -107,8 +112,8 @@ void PipeListen(Pipe *cursor, Report *stateReport, Report readReport) {
 
    while(cursor) {
       if(read(cursor->fd, &readReport, sizeof(Report))) {
-         printf("%d: Cell %d said hi to me!!! :D\n",
-          stateReport->id, readReport.id);
+         //printf("%d: Cell %d said hi to me!!! :D\n",
+         // stateReport->id, readReport.id);
 
          count++;
          average += readReport.value;
@@ -124,6 +129,6 @@ void PipeListen(Pipe *cursor, Report *stateReport, Report readReport) {
    if (count) {
       average /= count;
       stateReport->value = average;
-      printf("%lf\n", average);
+      //printf("%lf\n", average);
    }
 }
