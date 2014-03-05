@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include "Report.h"
 
+#define MAGIC_STALEY 42
+
 typedef struct Pipe {
    int fd;
    struct Pipe *next;
@@ -30,11 +32,11 @@ int main(int argc, char *argv[]) {
 
    cursor = outputFiles;
    while (cursor) {
-     close(cursor->fd);
-     cursor = cursor->next;
+      close(cursor->fd);
+      cursor = cursor->next;
    }
 
-   return inputFiles ? 0 : 42;
+   return inputFiles ? 0 : STALEY;
 }
 
 void SetupCell(int argc, char **argv, Report *stateReport, int *simulations, 
