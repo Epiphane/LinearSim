@@ -9,7 +9,7 @@ typedef struct Pipe {
 } Pipe;
 
 int SetupCell(int argc, char **argv, Report *stateReport, int *simulations, Pipe **inputFiles, Pipe **outputFiles);
-void PipeOut(Pipe *cursor, Report stateReport);
+void PipeOut(Pipe *cursor, Report *stateReport);
 void PipeListen(Pipe *cursor, Report *stateReport, Report readReport);
 
 int main(int argc, char *argv[]) {
@@ -18,12 +18,19 @@ int main(int argc, char *argv[]) {
    int simulations, fixed;
    Pipe *inputFiles = NULL, *outputFiles = NULL;
 
-   fixed = SetupCell(argc, argv, &stateReport, &simulations, &inputFiles, &outputFiles);
+   fixed = SetupCell(argc, argv, &stateReport,
+    &simulations, &inputFiles, &outputFiles);
 
    cursor = outputFiles;
-   PipeOut(cursor, stateReport);
-   cursor = inputFiles;
-   PipeListen(cursor, &stateReport, readReport);
+   PipeOut(cursor, &stateReport);
+   stateReport.step++;
+
+   for(; stateReport.step < simulations; stateReport.step++) {
+      cursor = inputFiles;
+      PipeListen(cursor, &stateReport, readReport);
+      cursor = outputFiles;
+      PipeOut(cursor, &stateReport);
+   }
 
    // END THE TEST ------------------------------------
 
@@ -79,15 +86,15 @@ int SetupCell(int argc, char **argv, Report *stateReport, int *simulations, Pipe
    return fixed;
 }
 
-void PipeOut(Pipe *cursor, Report stateReport) {
+void PipeOut(Pipe *cursor, Report *stateReport) {
    // TESTS TO MAKE SURE PIPES WORK CORRECTLY ---------
    // Say hi, Billy! (Testing the pipes)
    int result;
 
    while(cursor) {
-      if((result = write(cursor->fd, &stateReport, sizeof(Report))) <= 0)
+      if((result = write(cursor->fd, stateReport, sizeof(Report))) <= 0)
          printf("%d: Issue writing to %d: write returned %d\n",
-          stateReport.id, cursor->fd, result);
+          stateReport->id, cursor->fd, result);
       close(cursor->fd);
       cursor = cursor->next;
    }
